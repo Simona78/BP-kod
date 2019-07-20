@@ -8,10 +8,8 @@ public class SequenceGameObject : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        int id = GameObject.Find("TCPService").GetComponent<TCPService>().getDiagCount();
 
-
-
+        int id = GameObject.Find("TCPService").GetComponent<TCPService>().GetDiagCount();
         diagram = new GameObject("TEST: "+id.ToString());
 	}
 	

@@ -18,19 +18,14 @@ public class Class : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         tmp = GameObject.Find("TCPService");
-        Debug.Log("TEST: " + tmp.GetComponent<TCPService>().getDiagCount());
-
-
-        diagram = GameObject.Find("#"+ (tmp.GetComponent<TCPService>().getDiagCount()-1));
+        diagram = GameObject.Find("#"+ (tmp.GetComponent<TCPService>().GetDiagCount()-1));
         lifeline = transform.Find("lifeline");
         lifelineRenderer = lifeline.GetComponent<UILineRenderer>();
 	}
 
     // Update is called once per frame
     void Update() {
-
-       // Debug.Log(diagram.name);
-        
+ 
         var csize = lifeline.parent.GetComponent<RectTransform>().sizeDelta;
         var toX = csize.x * 0.5f;
         var toY = diagram.GetComponent<RectTransform>().sizeDelta.y;

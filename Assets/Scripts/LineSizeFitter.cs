@@ -7,7 +7,7 @@ using UnityEngine.UI;
 [ExecuteInEditMode]
 public class LineSizeFitter : MonoBehaviour
 {
-    public float offset;
+    private float offset;
 
     private UILineRenderer lineRenderer;
     private LayoutElement layoutElement;

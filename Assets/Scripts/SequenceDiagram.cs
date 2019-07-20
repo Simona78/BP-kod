@@ -27,7 +27,10 @@ public class SequenceDiagram : MonoBehaviour {
     float[] bottomRight = new float[3];
 
     private IList<IList> loops = null; // loops rows 
+    private IList<IList> conditions = null; // loops rows 
     private List<Loop> LoopList = null; // loops objects
+
+    public List<GameObject> loopsListAll = new List<GameObject>();
 
     IEnumerator Test()
     {
@@ -55,6 +58,28 @@ public class SequenceDiagram : MonoBehaviour {
         this.refreshInfo();
     }
 
+
+    public IList<IList> getConditions()
+    {
+        return this.conditions;
+     }
+
+
+    public void setConditions(IList<IList> conditions_tmp)
+    {
+        Debug.Log("Adding loops: " + this.loops.Count);
+
+        this.conditions = conditions_tmp;
+
+        foreach(IList item in this.conditions)
+        {
+            this.loops.Add(item);
+        }
+
+        Debug.Log("Adding conditions: " + this.loops.Count);
+      
+    }
+
     public void setLoops(IList<IList> loops_tmp)
     {
         this.loops = loops_tmp;
@@ -75,7 +100,7 @@ public class SequenceDiagram : MonoBehaviour {
         }
         catch (NullReferenceException ex)
         {
-
+            Debug.Log(ex.Message);
         }
         
     }
@@ -104,7 +129,7 @@ public class SequenceDiagram : MonoBehaviour {
     // Use this for initialization
     void Start () {
             
-        this.obj = GameObject.Find("#"+ (GameObject.Find("TCPService").GetComponent<TCPService>().getDiagCount()-1));
+        this.obj = GameObject.Find("#"+ (GameObject.Find("TCPService").GetComponent<TCPService>().GetDiagCount()-1));
 
 
         this.refreshBounds();
@@ -128,12 +153,12 @@ public class SequenceDiagram : MonoBehaviour {
 
             var line = this.obj.GetComponent<LineRenderer>();
 
-            line.SetPosition(0, new Vector3(posX +  0            , posY +  y/2 + spacing, 0));
-            line.SetPosition(1, new Vector3(posX + -x/2 - spacing, posY +  y/2 + spacing, 0));
-            line.SetPosition(2, new Vector3(posX + -x/2 - spacing, posY + -y/2 - spacing, 0));
-            line.SetPosition(3, new Vector3(posX +  x/2 + spacing, posY + -y/2 - spacing, 0));
-            line.SetPosition(4, new Vector3(posX +  x/2 + spacing, posY +  y/2 + spacing, 0));
-            line.SetPosition(5, new Vector3(posX +  0            , posY +  y /2 + spacing, 0));
+            line.SetPosition(0, new Vector3(posX +  0            , posY +  y/2 + spacing, this.obj.GetComponent<RectTransform>().position.z));
+            line.SetPosition(1, new Vector3(posX + -x/2 - spacing, posY +  y/2 + spacing, this.obj.GetComponent<RectTransform>().position.z));
+            line.SetPosition(2, new Vector3(posX + -x/2 - spacing, posY + -y/2 - spacing, this.obj.GetComponent<RectTransform>().position.z));
+            line.SetPosition(3, new Vector3(posX +  x/2 + spacing, posY + -y/2 - spacing, this.obj.GetComponent<RectTransform>().position.z));
+            line.SetPosition(4, new Vector3(posX +  x/2 + spacing, posY +  y/2 + spacing, this.obj.GetComponent<RectTransform>().position.z));
+            line.SetPosition(5, new Vector3(posX +  0            , posY +  y /2 + spacing, this.obj.GetComponent<RectTransform>().position.z));
 
             line.material = new Material(Shader.Find("Sprites/Default"));
             line.startColor = Color.black;
@@ -155,7 +180,7 @@ public class SequenceDiagram : MonoBehaviour {
         if(!classesDict.ContainsKey(name) || classesDict[name] == null)
         {
             var cls = Instantiate(classPrefab, classesTransform);
-            int currLayer = (GameObject.Find("#" + (GameObject.Find("TCPService").GetComponent<TCPService>().getDiagCount() - 1))).layer;
+            int currLayer = (GameObject.Find("#" + (GameObject.Find("TCPService").GetComponent<TCPService>().GetDiagCount() - 1))).layer;
             cls.layer = currLayer;
             TCPService.SetLayerRecursively(cls, currLayer);
             var tmp = cls.GetComponentInChildren<TextMeshProUGUI>();
@@ -170,7 +195,12 @@ public class SequenceDiagram : MonoBehaviour {
         bool existingLoop = false;
         Loop tmpLoop = null;
 
-        if(loopsTransform.childCount > 0)
+        //subloop scaling resize;
+        int subloop = 0;
+
+        List<Transform> subloopObjectList = new List<Transform>();
+
+        if (loopsTransform.childCount > 0)
         {
             for(int i = 0; i < loopsTransform.childCount; i++)
             {
@@ -178,40 +208,75 @@ public class SequenceDiagram : MonoBehaviour {
 
                 IList itemBounds = item.GetComponent<Loop>().getBounds();
 
-                if(    (int.Parse(itemBounds[0].ToString()) == int.Parse(tmpBounds[0].ToString()))
-                    && (int.Parse(itemBounds[1].ToString()) == int.Parse(tmpBounds[1].ToString())))
+                if(    (System.Convert.ToInt32(itemBounds[0].ToString()) == System.Convert.ToInt32(tmpBounds[0].ToString()))
+                    && (System.Convert.ToInt32(itemBounds[1].ToString()) == System.Convert.ToInt32(tmpBounds[1].ToString())))
                 {
                     existingLoop = true;
 
                     tmpLoop = item.GetComponent<Loop>();
                 }
+
+              
+                if (!existingLoop)
+                {
+                    bool fromBottom = ( (System.Convert.ToInt32(itemBounds[0].ToString()) >= System.Convert.ToInt32(tmpBounds[0].ToString())));
+                    bool fromTop = ((System.Convert.ToInt32(itemBounds[1].ToString()) <= System.Convert.ToInt32(tmpBounds[1].ToString())));
+
+                    Debug.LogWarning("SUBLOOP CONDITION:" + System.Convert.ToInt32(itemBounds[0].ToString())+"  |  " + System.Convert.ToInt32(tmpBounds[0].ToString()));
+                    Debug.LogWarning("SUBLOOP CONDITION:" + System.Convert.ToInt32(itemBounds[1].ToString()) + "  |  " + System.Convert.ToInt32(tmpBounds[1].ToString()));
+
+
+                    if (fromBottom && fromTop)
+                    {
+
+                        Debug.LogWarning("SUBLOOP ADD:" + subloop);
+                        subloop += 1;
+
+                        subloopObjectList.Add(item);
+                    }
+                }
+                
+               
             }
+
         }
 
         if (!existingLoop)
         {
-            var lop = Instantiate(loopPrefab, loopsTransform);
-            int currLayer = (GameObject.Find("#" + (GameObject.Find("TCPService").GetComponent<TCPService>().getDiagCount() - 1))).layer;
-            lop.layer = currLayer;
+
+            var loop = Instantiate(loopPrefab, loopsTransform);
+            int currLayer = (GameObject.Find("#" + (GameObject.Find("TCPService").GetComponent<TCPService>().GetDiagCount() - 1))).layer;
+            loop.layer = currLayer;
+            TCPService.SetLayerRecursively(loop, currLayer);
+
+
+            loopsListAll.Add(loop);
 
             // get loop object script
-            var lopScript = lop.GetComponent<Loop>();
+            var lopScript = loop.GetComponent<Loop>();
 
             // init Object
             lopScript.setBounds(tmpBounds);
             lopScript.addLoopObject(tmpObject);
+
+            Debug.LogWarning("SUBLOOP LOOP:"+ subloop);
+
+
+            for (int i = 0; i < subloop; i++)
+            {
+                subloopObjectList[i].GetComponent<Loop>().decreaseLevel();
+            }
         }
         else
         {
             tmpLoop.addLoopObject(tmpObject);
         }
-
     }
 
     public void AddMessage(string from, string to, string message, int lineNo, bool dashed=false)
     {
         var msg = Instantiate(messagePrefab, messagesTransform);
-        int currLayer = (GameObject.Find("#" + (GameObject.Find("TCPService").GetComponent<TCPService>().getDiagCount() - 1))).layer;
+        int currLayer = (GameObject.Find("#" + (GameObject.Find("TCPService").GetComponent<TCPService>().GetDiagCount() - 1))).layer;
         msg.layer = currLayer;
         TCPService.SetLayerRecursively(msg, currLayer);
         var label = msg.transform.Find("label");

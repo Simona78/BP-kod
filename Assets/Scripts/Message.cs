@@ -18,6 +18,10 @@ public class Message : MonoBehaviour
     public int line = 0;
     public bool inLoop = false;
 
+    //existing in subloop or else
+    public bool inserted = false;
+
+
     public string name = "";
 
     protected virtual float Width
@@ -69,6 +73,16 @@ public class Message : MonoBehaviour
         }
     }
 
+    public Vector3 getPosition()
+    {
+        return transform.position;
+    }
+
+    public Vector3 getLocalPosition()
+    {
+        return transform.localPosition;
+    }
+
 
 
     protected virtual List<Vector2> LineAltPoints
@@ -95,42 +109,8 @@ public class Message : MonoBehaviour
         }
     }
 
-    //protected virtual void setLoop()
-    //{
-    //    var alt = transform.Find("arc");
-    //
-    //    alt.gameObject.SetActive(true);
-    //
-    //    Debug.Log(alt);
-    //}
-
     private void Start()
     {
-        //Debug.Log(transform.parent.gameObject);
-        //
-        //
-        //Transform lastChild = null;
-        //
-        //if (transform.parent.childCount  > 1)
-        //{
-        //    lastChild = transform.parent.GetChild(transform.parent.childCount - 2);
-        //}
-        //
-        //
-        //if (lastChild)
-        //{
-        //    if(transform.Find("label").GetComponent<TextMeshProUGUI>().text == lastChild.Find("label").GetComponent<TextMeshProUGUI>().text)
-        //    {
-        //        lastChild.GetComponent<Message>().setLoop();
-        //         Destroy(transform.gameObject);
-        //    }
-        //}
-        //
-        //Debug.LogWarning(lastChild);
-        //Debug.LogWarning(lastChild);
-
-      
-
         try
         {
             var sequenceLoops = transform.parent.parent.GetComponent<SequenceDiagram>().getLoops();
@@ -140,10 +120,6 @@ public class Message : MonoBehaviour
 
             foreach (IList singleLoop in sequenceLoops)
             {
-                Debug.LogWarning("LOOP CHECK ("+ this.line +"): " + singleLoop[0].ToString()+ "|"+ singleLoop[1].ToString());
-
-
-
                 int topBound = int.Parse(singleLoop[0].ToString());
                 int bottomBound = int.Parse(singleLoop[1].ToString());
 
@@ -159,18 +135,11 @@ public class Message : MonoBehaviour
             {
                 transform.parent.parent.GetComponent<SequenceDiagram>().AddLoop(savedLoop,transform.gameObject);
             }
-
-            Debug.LogWarning("IN LOOOOP ??? --- " + this.inLoop);
-           
         }
         catch (NullReferenceException ex)
         {
-         
+            Debug.LogError(ex.Message);
         }
-
-        
-
-        //Destroy(transform.gameObject);
     }
 
     // Update is called once per frame
@@ -201,8 +170,6 @@ public class Message : MonoBehaviour
 
         rt = label.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(Width, 0);
-
-
    
         lr.Points = LinePoints.ToArray();
 
